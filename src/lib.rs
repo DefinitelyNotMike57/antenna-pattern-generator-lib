@@ -11,8 +11,8 @@
 use derive_new::new;
 use num::{
     complex::Complex,
-    traits::{Float, Num},
 };
+use memoize::memoize;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -35,26 +35,9 @@ pub trait ElementIface {
     ///
     ///
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64>;
-}
 
-/// Associate a position with an element
-///
-/// This allows a single instance of an element to be used multiple times in
-/// an array and if that element has cached it input/output pairs then the same
-/// operation won't have to be run hundreds of times for a single call.
-struct PositionElement {
-    position: Point,
-    position_factor: Complex<f64>,
-    weight: Complex<f64>,
-    element: Box<dyn ElementIface>,
-}
-
-/// Obviously get_gain() but also cache the results from the translation function
-///
-/// The elements are always in the same position relative to each other so caching
-/// the translation results just make sense.
-impl PositionElement {
-    fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
+    //fn set_position(&self, position: Point);
+    //fn set_weight(&self, weight: f64);
 }
 
 /// Translates element patterns in space
@@ -64,8 +47,7 @@ impl PositionElement {
 /// to a different position so that their independent patterns can combine into
 /// a more focused pattern.
 ///
-#[memoize(Capacity: 1000)]
-fn calc_phase(pnt: &Point, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
+fn calc_phase(pnt: & Point, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
     let k = 2.0 * PI * frequency / SPEED_OF_LIGHT;
 
     let dx = IMAG * k * pnt.x * phi.cos() * theta.sin();
@@ -77,16 +59,18 @@ fn calc_phase(pnt: &Point, frequency: f64, theta: f64, phi: f64) -> Complex<f64>
 
 /// An omni-directional element is the most generic type of element
 ///
-///
+/// On initialization, the user can set the position, gain, and weight
+/// of this element.
 #[derive(new)]
 pub struct OmniElement {
     position: Point,
     gain: f64,
+    weight: Complex<f64>,
 }
 
 impl ElementIface for OmniElement {
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
-        calc_phase(&self.position, frequency, theta, phi) * self.gain
+        calc_phase(&self.position, frequency, theta, phi) * self.gain * self.weight
     }
 }
 
@@ -96,29 +80,43 @@ pub struct PatchElement {
     length: f64,
     // side of patch normal to feed (meters)
     width: f64,
+    weight: Complex<f64>,
+}
+
+/// Canonical formula to calculate gain of patch antenna
+///
+/// I created a function for this so that all PatchElement instances
+/// can benefit from the memoization that is here.
+fn patch_gain( length: f64, width: f64, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
+    let k = 2.0 * PI * frequency / SPEED_OF_LIGHT;
+    let sin_theta = theta.sin();
+    let cos_theta = theta.cos();
+    let sin_phi = phi.sin();
+    let cos_phi = phi.cos();
+
+    let inside0 = k * width * sin_theta * sin_phi / 2.0;
+    let value0 = inside0.sin() / inside0;
+    let value1 = (k * length * sin_theta * cos_phi).cos();
+    let value2 = value0 * value1;
+
+    let e_field_theta = value2 * cos_phi;
+    let e_field_phi = -value2 * cos_theta * sin_phi;
+
+    Complex::new(
+        (e_field_theta.powf(2.0) + e_field_phi.powf(2.0)).powf(0.5),
+        0.0,
+    )
 }
 
 impl ElementIface for PatchElement {
-    #[memoize(Capacity: 123)]
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
-        let k = 2.0 * PI * frequency / SPEED_OF_LIGHT;
-        let sin_theta = theta.sin();
-        let cos_theta = theta.cos();
-        let sin_phi = phi.sin();
-        let cos_phi = phi.cos();
-
-        let inside0 = k * self.width * sin_theta * sin_phi / 2.0;
-        let value0 = inside0.sin() / inside0;
-        let value1 = (k * self.length * sin_theta * cos_phi).cos();
-        let value2 = value0 * value1;
-
-        let e_field_theta = value2 * cos_phi;
-        let e_field_phi = -value2 * cos_theta * sin_phi;
-
-        Complex::new(
-            (e_field_theta.powf(2.0) + e_field_phi.powf(2.0)).powf(0.5),
-            0.0,
-        )
+        patch_gain(
+            self.length,
+            self.width,
+            frequency,
+            theta,
+            phi
+            )
     }
 }
 
@@ -164,16 +162,16 @@ pub struct Point {
     z: f64,
 }
 
-/// This object represents an antenna array
+/// This object represents an array of elements
 ///
 /// Antenna arrays take many shapes, this can handle all of them as long as
 /// each element satisfies the ElementIface trait.
 #[derive(new)]
-pub struct ArrayAntenna {
-    elements: Vec<PositionElement>,
+pub struct ElementArray {
+    elements: Vec<Box<dyn ElementIface>>,
 }
 
-impl ArrayIface for ArrayAntenna {
+impl ArrayIface for ElementArray {
     fn get_channel_gain(
         &self,
         channel: usize,
@@ -183,6 +181,7 @@ impl ArrayIface for ArrayAntenna {
     ) -> Complex<f64> {
         self.elements[channel].get_gain(frequency, phi, theta)
     }
+
     fn get_gain(&self, frequency: f64, phi: f64, theta: f64) -> Complex<f64> {
         let gains: Vec<Complex<f64>> = self
             .elements
