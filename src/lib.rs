@@ -9,9 +9,7 @@
 #![warn(missing_doc_code_examples)]
 
 use derive_new::new;
-use num::{
-    complex::Complex,
-};
+use num::complex::Complex;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -36,7 +34,7 @@ pub trait ElementIface {
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64>;
 
     //fn set_position(&self, position: Point);
-    fn set_weight( &mut self, weight: Complex<f64>);
+    fn set_weight(&mut self, weight: Complex<f64>);
 }
 
 /// Translates element patterns in space
@@ -46,7 +44,7 @@ pub trait ElementIface {
 /// to a different position so that their independent patterns can combine into
 /// a more focused pattern.
 ///
-fn calc_phase(pnt: & Point, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
+fn calc_phase(pnt: &Point, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
     let k = 2.0 * PI * frequency / SPEED_OF_LIGHT;
 
     let dx = I * k * pnt.x * phi.cos() * theta.sin();
@@ -77,7 +75,7 @@ impl ElementIface for OmniElement {
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
         calc_phase(&self.position, frequency, theta, phi) * self.gain * self.weight
     }
-    fn set_weight( &mut self, weight: Complex<f64> ) {
+    fn set_weight(&mut self, weight: Complex<f64>) {
         self.weight = weight;
     }
 }
@@ -100,7 +98,7 @@ pub struct PatchElement {
 ///
 /// I created a function for this so that all PatchElement instances
 /// can benefit from the memoization that is here.
-fn patch_gain( length: f64, width: f64, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
+fn patch_gain(length: f64, width: f64, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
     let k = 2.0 * PI * frequency / SPEED_OF_LIGHT;
     let sin_theta = theta.sin();
     let cos_theta = theta.cos();
@@ -126,16 +124,10 @@ fn patch_gain( length: f64, width: f64, frequency: f64, theta: f64, phi: f64) ->
 ///
 impl ElementIface for PatchElement {
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
-        patch_gain(
-            self.length,
-            self.width,
-            frequency,
-            theta,
-            phi
-            )
+        patch_gain(self.length, self.width, frequency, theta, phi)
     }
 
-    fn set_weight( &mut self, weight: Complex<f64> ) {
+    fn set_weight(&mut self, weight: Complex<f64>) {
         self.weight = weight;
     }
 }
