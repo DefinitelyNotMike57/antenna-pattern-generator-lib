@@ -22,7 +22,7 @@ use std::path::Path;
 pub const SPEED_OF_LIGHT: f64 = 299792458.0;
 
 /// An imaginary number
-const IMAG: Complex<f64> = Complex::new(0.0, 1.0);
+const I: Complex<f64> = Complex::new(0.0, 1.0);
 
 /// Pi
 pub const PI: f64 = std::f64::consts::PI;
@@ -50,9 +50,9 @@ pub trait ElementIface {
 fn calc_phase(pnt: & Point, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
     let k = 2.0 * PI * frequency / SPEED_OF_LIGHT;
 
-    let dx = IMAG * k * pnt.x * phi.cos() * theta.sin();
-    let dy = IMAG * k * pnt.y * phi.sin() * theta.sin();
-    let dz = IMAG * k * pnt.z * theta.cos();
+    let dx = I * k * pnt.x * phi.cos() * theta.sin();
+    let dy = I * k * pnt.y * phi.sin() * theta.sin();
+    let dz = I * k * pnt.z * theta.cos();
 
     dx.exp() * dy.exp() * dz.exp()
 }
