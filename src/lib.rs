@@ -62,11 +62,17 @@ fn calc_phase(pnt: & Point, frequency: f64, theta: f64, phi: f64) -> Complex<f64
 /// of this element.
 #[derive(new)]
 pub struct OmniElement {
+    // position of omni in space
     position: Point,
+    // Omni elements usually have a gain of 1 (0dBi) but the user can set this manually
     gain: f64,
+    // Weight applied to element pattern
     weight: Complex<f64>,
 }
 
+/// Satisfy required interface for OmniElement
+///
+///
 impl ElementIface for OmniElement {
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
         calc_phase(&self.position, frequency, theta, phi) * self.gain * self.weight
@@ -76,12 +82,17 @@ impl ElementIface for OmniElement {
     }
 }
 
+/// A patch is a PCB based antenna that has a hemispherically directional pattern
+///
+///
 pub struct PatchElement {
+    // position of patch in space
     position: Point,
     // side of patch parallel with feed (meters)
     length: f64,
     // side of patch normal to feed (meters)
     width: f64,
+    // Weight applied to element pattern
     weight: Complex<f64>,
 }
 
@@ -110,6 +121,9 @@ fn patch_gain( length: f64, width: f64, frequency: f64, theta: f64, phi: f64) ->
     )
 }
 
+/// Satisfy required interface for PatchElement
+///
+///
 impl ElementIface for PatchElement {
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
         patch_gain(
@@ -200,7 +214,7 @@ impl ArrayIface for ElementArray {
 
 /// Utility for writing array patterns to a file
 ///
-///
+/// TODO: change this to write to H5
 pub fn write_to_file(
     array: Box<dyn ArrayIface>,
     frequency: f64,
