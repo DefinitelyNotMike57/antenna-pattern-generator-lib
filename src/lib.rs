@@ -12,7 +12,6 @@ use derive_new::new;
 use num::{
     complex::Complex,
 };
-use memoize::memoize;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -37,7 +36,7 @@ pub trait ElementIface {
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64>;
 
     //fn set_position(&self, position: Point);
-    //fn set_weight(&self, weight: f64);
+    fn set_weight( &mut self, weight: Complex<f64>);
 }
 
 /// Translates element patterns in space
@@ -71,6 +70,9 @@ pub struct OmniElement {
 impl ElementIface for OmniElement {
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
         calc_phase(&self.position, frequency, theta, phi) * self.gain * self.weight
+    }
+    fn set_weight( &mut self, weight: Complex<f64> ) {
+        self.weight = weight;
     }
 }
 
@@ -117,6 +119,10 @@ impl ElementIface for PatchElement {
             theta,
             phi
             )
+    }
+
+    fn set_weight( &mut self, weight: Complex<f64> ) {
+        self.weight = weight;
     }
 }
 
