@@ -9,3 +9,6 @@ edition = "2021"
 num = "0.4.0"
 derive-new = "0.5"
 memoize = "0.2.1"
+
+[dev-dependencies]
+hdf5 = "0.8.1"
