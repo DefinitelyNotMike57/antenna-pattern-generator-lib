@@ -12,3 +12,4 @@ memoize = "0.2.1"
 
 [dev-dependencies]
 hdf5 = "0.8.1"
+ndarray = "0.15.4"
