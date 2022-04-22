@@ -3,6 +3,9 @@ use antenna_pattern_generator_lib::ElementIface;
 
 use num::complex::Complex;
 
+mod support;
+use support::write_to_file;
+
 #[test]
 fn element_spacing() {
     let wavelength = apg::SPEED_OF_LIGHT / 1e9;
@@ -22,11 +25,11 @@ fn element_spacing() {
 
     let array = Box::new(apg::ElementArray::new(vec![e0, e1]));
 
-    apg::write_to_file(
+    write_to_file(
         array,
         1e9,
         1.0 * apg::PI / 180.0,
         1.0 * apg::PI / 180.0,
-        "tests/output/two_element.csv".to_string(),
+        "tests/output/two_element.h5".to_string(),
     );
 }
