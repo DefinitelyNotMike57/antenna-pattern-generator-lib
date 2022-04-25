@@ -1,5 +1,4 @@
 use ndarray::{array, Array2, Axis};
-use std::path::Path;
 #[cfg(feature = "blosc")]
 use hdf5::filters::blosc_set_nthreads;
 use hdf5::{File, Result};
@@ -21,14 +20,6 @@ pub fn write_to_file(
     let num_phi_samples: usize = (2.0 * PI / phi_spacing) as usize;
     println!( "{} {}", num_theta_samples, num_phi_samples );
 
-    let path = Path::new(&file_name);
-    let display = path.display();
-
-    let mut file = match File::create(&path) {
-        Err(why) => panic!("Couldn't create {}: {}", display, why),
-        Ok(file) => file,
-    };
-
     let mut arr = Array2::zeros((num_phi_samples,num_theta_samples));
 
     for (phi_idx, mut row) in arr.axis_iter_mut(Axis(0)).enumerate() {
@@ -45,6 +36,7 @@ pub fn write_to_file(
     blosc_set_nthreads(2);
     let builder = group.new_dataset_builder();
     #[cfg(feature = "blosc")]
+    let builder = builder.blosc_zstd(9,true);
     let ds = builder
         .with_data( &arr )
         .create("gain")?;
