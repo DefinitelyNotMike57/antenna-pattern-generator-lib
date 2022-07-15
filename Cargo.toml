@@ -7,9 +7,11 @@ edition = "2021"
 
 [dependencies]
 num = "0.4.0"
-derive-new = "0.5"
-memoize = "0.2.1"
+derive_builder = "0.11.2"
+# derive-new = "0.5" # not sure I need this anymore
+# memoize = "0.2.1"  # may be useful in speeding things up
 
 [dev-dependencies]
 hdf5 = "0.8.1"
 ndarray = "0.15.4"
+# criterion = "0.3.6" # use this for benchmarking later

@@ -6,14 +6,12 @@
 //!
 
 #![warn(missing_docs)]
-#![warn(missing_doc_code_examples)]
+#![warn(rustdoc::missing_doc_code_examples)]
 
-use derive_new::new;
+#[macro_use]
+extern crate derive_builder;
+
 use num::complex::Complex;
-
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::Path;
 
 /// Speed of Light (m/s)
 pub const SPEED_OF_LIGHT: f64 = 299792458.0;
@@ -32,9 +30,6 @@ pub trait ElementIface {
     ///
     ///
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64>;
-
-    //fn set_position(&self, position: Point);
-    fn set_weight(&mut self, weight: Complex<f64>);
 }
 
 /// Translates element patterns in space
@@ -58,13 +53,14 @@ fn calc_phase(pnt: &Point, frequency: f64, theta: f64, phi: f64) -> Complex<f64>
 ///
 /// On initialization, the user can set the position, gain, and weight
 /// of this element.
-#[derive(new)]
+#[derive(Builder,Clone,Default)]
 pub struct OmniElement {
     // position of omni in space
     position: Point,
     // Omni elements usually have a gain of 1 (0dBi) but the user can set this manually
     gain: f64,
     // Weight applied to element pattern
+    #[builder(default = "Complex::new(1.0,0.0)")]
     weight: Complex<f64>,
 }
 
@@ -74,9 +70,6 @@ pub struct OmniElement {
 impl ElementIface for OmniElement {
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
         calc_phase(&self.position, frequency, theta, phi) * self.gain * self.weight
-    }
-    fn set_weight(&mut self, weight: Complex<f64>) {
-        self.weight = weight;
     }
 }
 
@@ -126,10 +119,6 @@ impl ElementIface for PatchElement {
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
         patch_gain(self.length, self.width, frequency, theta, phi)
     }
-
-    fn set_weight(&mut self, weight: Complex<f64>) {
-        self.weight = weight;
-    }
 }
 
 // Reads and interpolates a data table for the antenna pattern with optional
@@ -138,7 +127,6 @@ impl ElementIface for PatchElement {
 /// A special element that relies on a table of data
 ///
 ///
-#[derive(new)]
 struct DataElement {
     position: Option<Point>,
     data: Vec<Vec<Complex<f64>>>,
@@ -157,11 +145,14 @@ pub trait ArrayIface {
 }
 
 /// A position in 3D cartesian space
-#[derive(new)]
+#[derive(Builder,Clone,Default)]
 pub struct Point {
     // all values are distance from origin (meters)
+    #[builder( default = "0.0") ]
     x: f64,
+    #[builder( default = "0.0") ]
     y: f64,
+    #[builder( default = "0.0") ]
     z: f64,
 }
 
@@ -169,15 +160,11 @@ pub struct Point {
 ///
 /// Antenna arrays take many shapes, this can handle all of them as long as
 /// each element satisfies the ElementIface trait.
-#[derive(new)]
-pub struct ElementArray {
-    elements: Vec<Box<dyn ElementIface>>,
-}
+pub struct ElementArray ( pub Vec<Box<dyn ElementIface>> );
 
 impl ArrayIface for ElementArray {
     fn get_gain(&self, frequency: f64, phi: f64, theta: f64) -> Option<Complex<f64>> {
-        let gains: Vec<Complex<f64>> = self
-            .elements
+        let gains: Vec<Complex<f64>> = self.0
             .iter()
             .map(|n| n.get_gain(frequency, phi, theta))
             .collect();
