@@ -20,5 +20,5 @@ reasons below:
 I have taken the liberty of creating some integration tests in the
 [tests](tests/) directory. Each one shows how this library would be used
 and provides a helper [function](tests/support/mod.rs) to write the
-resulting pattern to an H5 file to the [output](tests/output/)
-directory.
+resulting pattern to an H5 file to the `tests/output/` directory which
+is created when `cargo test` is executed.
