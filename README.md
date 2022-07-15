@@ -22,3 +22,11 @@ I have taken the liberty of creating some integration tests in the
 and provides a helper [function](tests/support/mod.rs) to write the
 resulting pattern to an H5 file to the `tests/output/` directory which
 is created when `cargo test` is executed.
+
+
+## TODO
+
+[] Break out basic elemnts into their own module
+[] Create some array builder functions: rectangular array, circular array, etc.
+[] Add examples of using those builder functions to the `tests` directory
+[] Start benchmarking speed
