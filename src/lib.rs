@@ -148,17 +148,6 @@ struct DataElement {
 ///
 ///
 pub trait ArrayIface {
-    /// Return the gain of a single element from the array
-    ///
-    ///
-    fn get_channel_gain(
-        &self,
-        channel: usize,
-        frequency: f64,
-        theta: f64,
-        phi: f64,
-    ) -> Complex<f64>;
-
     /// Return the cumulative gain of all elements in array
     ///
     ///
@@ -184,16 +173,6 @@ pub struct ElementArray {
 }
 
 impl ArrayIface for ElementArray {
-    fn get_channel_gain(
-        &self,
-        channel: usize,
-        frequency: f64,
-        phi: f64,
-        theta: f64,
-    ) -> Complex<f64> {
-        self.elements[channel].get_gain(frequency, phi, theta)
-    }
-
     fn get_gain(&self, frequency: f64, phi: f64, theta: f64) -> Complex<f64> {
         let gains: Vec<Complex<f64>> = self
             .elements
@@ -203,4 +182,3 @@ impl ArrayIface for ElementArray {
         gains.iter().sum()
     }
 }
-
