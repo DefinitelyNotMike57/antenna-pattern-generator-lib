@@ -26,7 +26,7 @@ is created when `cargo test` is executed.
 
 ## TODO
 
-[] Break out basic elemnts into their own module
-[] Create some array builder functions: rectangular array, circular array, etc.
-[] Add examples of using those builder functions to the `tests` directory
-[] Start benchmarking speed
+- [ ] Break out basic elemnts into their own module
+- [ ] Create some array builder functions: rectangular array, circular array, etc.
+- [ ] Add examples of using those builder functions to the `tests` directory
+- [ ] Start benchmarking speed
