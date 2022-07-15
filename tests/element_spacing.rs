@@ -28,7 +28,7 @@ fn element_spacing() {
     write_to_file(
         array,
         1e9,
-        1.0 * apg::PI / 180.0,
+        0.5 * apg::PI / 180.0,
         1.0 * apg::PI / 180.0,
         "tests/output/two_element.h5".to_string(),
     );

@@ -26,7 +26,7 @@ pub fn write_to_file(
         let phi = phi_idx as f64 * phi_spacing;
         for theta_idx in 0..num_theta_samples {
             let theta = theta_idx as f64 * theta_spacing;
-            row[theta_idx] = array.get_gain(frequency, theta, phi).norm();
+            row[theta_idx] = array.get_gain(frequency, theta, phi).unwrap().norm();
         }
     }
 

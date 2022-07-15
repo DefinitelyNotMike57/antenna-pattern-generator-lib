@@ -148,10 +148,12 @@ struct DataElement {
 ///
 ///
 pub trait ArrayIface {
-    /// Return the cumulative gain of all elements in array
+    /// Return the gain of the array for this frequency/theta/phi
     ///
+    /// The return type is an option because some arrays won't be able to calculate their
+    /// gain for certain frequencies and/or aspect angles.
     ///
-    fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64>;
+    fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Option<Complex<f64>>;
 }
 
 /// A position in 3D cartesian space
@@ -173,12 +175,12 @@ pub struct ElementArray {
 }
 
 impl ArrayIface for ElementArray {
-    fn get_gain(&self, frequency: f64, phi: f64, theta: f64) -> Complex<f64> {
+    fn get_gain(&self, frequency: f64, phi: f64, theta: f64) -> Option<Complex<f64>> {
         let gains: Vec<Complex<f64>> = self
             .elements
             .iter()
             .map(|n| n.get_gain(frequency, phi, theta))
             .collect();
-        gains.iter().sum()
+        Some( gains.iter().sum() )
     }
 }
