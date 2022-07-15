@@ -10,7 +10,7 @@ asking yourself __WHY__ would you want to make one. There are a few
 reasons below:
 
 0. Learning: are you are interested in [phased arrays](https://en.wikipedia.org/wiki/Phased_array)?
-0. Simulation: for projects that use antennas and want to simulate performance
+0. Simulation: for projects that use antennas and want to simulate their effect on system performance
 0. Making pretty pictures: it might just be me but that looks pretty cool
 
 (TODO: insert picture)
