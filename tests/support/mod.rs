@@ -1,4 +1,4 @@
-use antenna_pattern_generator_lib::ArrayIface;
+use antenna_pattern_generator_lib::GainIface;
 use antenna_pattern_generator_lib::PI;
 #[cfg(feature = "blosc")]
 use hdf5::filters::blosc_set_nthreads;
@@ -12,7 +12,7 @@ use ndarray::{Array2, Axis};
 ///
 /// TODO: change this to write to H5
 pub fn write_to_file(
-    array: Box<dyn ArrayIface>,
+    array: Box<dyn GainIface>,
     frequency: f64,
     theta_spacing: f64,
     phi_spacing: f64,

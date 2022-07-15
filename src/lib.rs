@@ -25,11 +25,13 @@ pub const PI: f64 = std::f64::consts::PI;
 /// Interface for elements of an array
 ///
 ///
-pub trait ElementIface {
-    /// Returns the gain of this element
+pub trait GainIface {
+    /// Return the gain of the array for this frequency/theta/phi
     ///
+    /// The return type is an option because some arrays won't be able to calculate their
+    /// gain for certain frequencies and/or aspect angles.
     ///
-    fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64>;
+    fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Option<Complex<f64>>;
 }
 
 /// Translates element patterns in space
@@ -67,9 +69,9 @@ pub struct OmniElement {
 /// Satisfy required interface for OmniElement
 ///
 ///
-impl ElementIface for OmniElement {
-    fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
-        calc_phase(&self.position, frequency, theta, phi) * self.gain * self.weight
+impl GainIface for OmniElement {
+    fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Option<Complex<f64>> {
+        Some( calc_phase(&self.position, frequency, theta, phi) * self.gain * self.weight )
     }
 }
 
@@ -115,9 +117,9 @@ fn patch_gain(length: f64, width: f64, frequency: f64, theta: f64, phi: f64) -> 
 /// Satisfy required interface for PatchElement
 ///
 ///
-impl ElementIface for PatchElement {
-    fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Complex<f64> {
-        patch_gain(self.length, self.width, frequency, theta, phi)
+impl GainIface for PatchElement {
+    fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Option<Complex<f64>> {
+        Some( patch_gain(self.length, self.width, frequency, theta, phi) )
     }
 }
 
@@ -130,18 +132,6 @@ impl ElementIface for PatchElement {
 struct DataElement {
     position: Option<Point>,
     data: Vec<Vec<Complex<f64>>>,
-}
-
-/// Interface for types of arrays
-///
-///
-pub trait ArrayIface {
-    /// Return the gain of the array for this frequency/theta/phi
-    ///
-    /// The return type is an option because some arrays won't be able to calculate their
-    /// gain for certain frequencies and/or aspect angles.
-    ///
-    fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Option<Complex<f64>>;
 }
 
 /// A position in 3D cartesian space
@@ -159,14 +149,14 @@ pub struct Point {
 /// This object represents an array of elements
 ///
 /// Antenna arrays take many shapes, this can handle all of them as long as
-/// each element satisfies the ElementIface trait.
-pub struct ElementArray ( pub Vec<Box<dyn ElementIface>> );
+/// each element satisfies the GainIface trait.
+pub struct ElementArray ( pub Vec<Box<dyn GainIface>> );
 
-impl ArrayIface for ElementArray {
+impl GainIface for ElementArray {
     fn get_gain(&self, frequency: f64, phi: f64, theta: f64) -> Option<Complex<f64>> {
         let gains: Vec<Complex<f64>> = self.0
             .iter()
-            .map(|n| n.get_gain(frequency, phi, theta))
+            .map(|n| n.get_gain(frequency, phi, theta).unwrap())
             .collect();
         Some( gains.iter().sum() )
     }

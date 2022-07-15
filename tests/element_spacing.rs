@@ -1,5 +1,4 @@
 use antenna_pattern_generator_lib as apg;
-use antenna_pattern_generator_lib::ElementIface;
 
 use num::complex::Complex;
 
