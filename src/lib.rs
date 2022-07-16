@@ -22,13 +22,15 @@ const I: Complex<f64> = Complex::new(0.0, 1.0);
 /// Pi
 pub const PI: f64 = std::f64::consts::PI;
 
-/// Interface for elements of an array
+/// Interface for all objects that have gain
 ///
+/// This interface can be applied to basic elements and it can be applied to a
+/// group of elements.
 ///
 pub trait GainIface {
-    /// Return the gain of the array for this frequency/theta/phi
+    /// Return the gain for this frequency/theta/phi
     ///
-    /// The return type is an option because some arrays won't be able to calculate their
+    /// The return type is an option because some objects won't be able to calculate their
     /// gain for certain frequencies and/or aspect angles.
     ///
     fn get_gain(&self, frequency: f64, theta: f64, phi: f64) -> Option<Complex<f64>>;
